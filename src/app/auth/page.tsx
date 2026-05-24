@@ -5,10 +5,15 @@ import { createClient } from '@/lib/supabase/client'
 export default function AuthPage() {
 	const handleGoogleSignIn = async () => {
 		const supabase = createClient()
+		const isProd = process.env.NEXT_PUBLIC_ENV === 'production'
+		const baseUrl = isProd
+			? 'https://mvcast.vercel.app'
+			: 'http://localhost:3000'
+
 		await supabase.auth.signInWithOAuth({
 			provider: 'google',
 			options: {
-				redirectTo: `${window.location.origin}/auth/callback`
+				redirectTo: `${baseUrl}/auth/callback`
 			}
 		})
 	}

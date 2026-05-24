@@ -32,7 +32,7 @@ const AnimeHero = () => {
 
 	if (loading)
 		return (
-			<div className="w-full py-20 flex items-center justify-center">
+			<div className="w-full h-screen py-20 flex items-center justify-center">
 				<p className="text-cblue">Loading anime...</p>
 			</div>
 		)
