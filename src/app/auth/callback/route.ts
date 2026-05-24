@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-	const { searchParams, origin } = new URL(request.url)
+	const { searchParams } = new URL(request.url)
 	const code = searchParams.get('code')
 
 	if (code) {
@@ -10,5 +10,8 @@ export async function GET(request: NextRequest) {
 		await supabase.auth.exchangeCodeForSession(code)
 	}
 
-	return NextResponse.redirect(`${origin}/`)
+	const isProd = process.env.NEXT_PUBLIC_ENV === 'production'
+	const baseUrl = isProd ? 'https://mvcast.vercel.app' : 'http://localhost:3000'
+
+	return NextResponse.redirect(`${baseUrl}/`)
 }
