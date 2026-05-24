@@ -41,8 +41,8 @@ const AnimeHero = () => {
 		<div className="w-full">
 			<AnimeUpcoming anime={upcoming} />
 			<AnimePopular anime={popular} />
-			<ExploreMoreClient anime={explore} />
 			<GenresClient genres={genres} />
+			<ExploreMoreClient anime={explore} />
 		</div>
 	)
 }
