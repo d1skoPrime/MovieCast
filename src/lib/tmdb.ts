@@ -37,7 +37,11 @@ async function fetchAllPages(url: string, maxPages = 10) {
 		)
 	)
 
-	return [firstPage, ...rest].flatMap(p => p.results)
+	return [firstPage, ...rest]
+		.flatMap(p => p.results)
+		.filter(
+			(movie, index, self) => index === self.findIndex(m => m.id === movie.id)
+		)
 }
 
 export async function getUpcoming() {
@@ -128,6 +132,21 @@ export async function getPopularMovies() {
 		(a: any, b: any) => b.vote_average - a.vote_average
 	)
 	return results.map((movie: any) => ({
+		id: movie.id,
+		title: movie.title,
+		overview: movie.overview,
+		poster_path: movie.poster_path,
+		release_date: movie.release_date,
+		vote_average: movie.vote_average
+	}))
+}
+export async function searchMovies(query: string) {
+	const res = await fetch(
+		`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=1`,
+		{ next: { revalidate: 3600 } }
+	)
+	const data = await res.json()
+	return data.results.map((movie: any) => ({
 		id: movie.id,
 		title: movie.title,
 		overview: movie.overview,

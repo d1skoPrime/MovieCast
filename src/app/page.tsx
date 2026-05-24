@@ -1,7 +1,7 @@
 import Hero from '@/components/Hero'
 import NavBar from '@/components/NavBar'
 export const dynamic = 'force-dynamic'
-export const revalidate = 21600 // cache for 6 hours
+export const revalidate = 21600 // 6 hours in seconds
 export default function Home() {
 	return (
 		<div className="w-full h-full">

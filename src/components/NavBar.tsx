@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 import { HiOutlineMail } from 'react-icons/hi'
 import { PiCoffeeBold } from 'react-icons/pi'
 import { RiMovie2AiFill } from 'react-icons/ri'
@@ -9,6 +10,39 @@ import FeedbackModal from './FeedBackModal'
 const NavBar = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
+	const [suggestions, setSuggestions] = useState<any[]>([])
+	const [showSuggestions, setShowSuggestions] = useState(false)
+	const router = useRouter()
+	const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+	useEffect(() => {
+		if (searchQuery.trim().length < 2) {
+			setSuggestions([])
+			return
+		}
+
+		if (debounceRef.current) clearTimeout(debounceRef.current)
+		debounceRef.current = setTimeout(async () => {
+			const res = await fetch(
+				`/api/search?q=${encodeURIComponent(searchQuery)}`
+			)
+			const data = await res.json()
+			setSuggestions(data.slice(0, 6)) // show max 6 suggestions
+		}, 300) // wait 300ms after user stops typing
+
+		return () => {
+			if (debounceRef.current) clearTimeout(debounceRef.current)
+		}
+	}, [searchQuery])
+
+	const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter' && searchQuery.trim()) {
+			router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+			setSearchQuery('')
+			setSuggestions([])
+			setShowSuggestions(false)
+		}
+	}
 
 	return (
 		<div className="w-full h-full relative">
@@ -26,7 +60,13 @@ const NavBar = () => {
 						<input
 							type="text"
 							value={searchQuery}
-							onChange={e => setSearchQuery(e.target.value)}
+							onChange={e => {
+								setSearchQuery(e.target.value)
+								setShowSuggestions(true)
+							}}
+							onKeyDown={handleSearch}
+							onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+							onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
 							placeholder="Search movies..."
 							className="w-full py-2 pl-10 pr-4 bg-card-bg border border-cblue/30 rounded-full text-wite placeholder-cblue/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
 						/>
@@ -43,6 +83,43 @@ const NavBar = () => {
 								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
 							/>
 						</svg>
+
+						{/* Suggestions Dropdown */}
+						{showSuggestions && suggestions.length > 0 && (
+							<div className="absolute top-full left-0 right-0 mt-2 bg-card-bg border border-cblue/30 rounded-xl overflow-hidden shadow-xl z-50 bg-background">
+								{suggestions.map(movie => (
+									<button
+										key={movie.id}
+										onMouseDown={() => {
+											router.push(`/details/${movie.id}`)
+											setSearchQuery('')
+											setSuggestions([])
+											setShowSuggestions(false)
+										}}
+										className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-background/50 transition-colors duration-150 cursor-pointer"
+									>
+										<img
+											src={
+												movie.poster_path
+													? `https://image.tmdb.org/t/p/w92${movie.poster_path}`
+													: '/placeholder.png'
+											}
+											alt={movie.title}
+											className="w-8 h-11 object-cover rounded shrink-0"
+										/>
+										<div className="text-left">
+											<p className="text-white text-sm font-medium truncate">
+												{movie.title}
+											</p>
+											<p className="text-cblue text-xs">
+												{movie.release_date?.split('-')[0]} • ★{' '}
+												{movie.vote_average?.toFixed(1)}
+											</p>
+										</div>
+									</button>
+								))}
+							</div>
+						)}
 					</div>
 				</div>
 
