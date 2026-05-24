@@ -1,4 +1,4 @@
-import MovieDetails from '@/components/MovieDetails'
+import MovieDetails from '@/components/Movie/MovieDetails'
 import { getMovieDetails } from '@/lib/tmdb'
 
 export default async function Page({

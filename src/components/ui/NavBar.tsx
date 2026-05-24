@@ -2,12 +2,11 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { HiOutlineMail } from 'react-icons/hi'
 import { PiCoffeeBold } from 'react-icons/pi'
 import { RiMovie2AiFill } from 'react-icons/ri'
 import FeedbackModal from './FeedBackModal'
 
-const NavBar = () => {
+const NavBar = ({ mode }: { mode: 'movies' | 'anime' }) => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
 	const [suggestions, setSuggestions] = useState<any[]>([])
@@ -23,21 +22,27 @@ const NavBar = () => {
 
 		if (debounceRef.current) clearTimeout(debounceRef.current)
 		debounceRef.current = setTimeout(async () => {
-			const res = await fetch(
-				`/api/search?q=${encodeURIComponent(searchQuery)}`
-			)
+			const endpoint =
+				mode === 'anime'
+					? `/api/search-anime?q=${encodeURIComponent(searchQuery)}`
+					: `/api/search?q=${encodeURIComponent(searchQuery)}`
+			const res = await fetch(endpoint)
 			const data = await res.json()
-			setSuggestions(data.slice(0, 6)) // show max 6 suggestions
-		}, 300) // wait 300ms after user stops typing
+			setSuggestions(data.slice(0, 6))
+		}, 300)
 
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current)
 		}
-	}, [searchQuery])
+	}, [searchQuery, mode])
 
 	const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter' && searchQuery.trim()) {
-			router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+			const path =
+				mode === 'anime'
+					? `/search-anime?q=${encodeURIComponent(searchQuery.trim())}`
+					: `/search?q=${encodeURIComponent(searchQuery.trim())}`
+			router.push(path)
 			setSearchQuery('')
 			setSuggestions([])
 			setShowSuggestions(false)
@@ -67,7 +72,9 @@ const NavBar = () => {
 							onKeyDown={handleSearch}
 							onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
 							onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-							placeholder="Search movies..."
+							placeholder={
+								mode === 'anime' ? 'Search anime...' : 'Search movies...'
+							}
 							className="w-full py-2 pl-10 pr-4 bg-card-bg border border-cblue/30 rounded-full text-wite placeholder-cblue/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
 						/>
 						<svg
@@ -86,34 +93,43 @@ const NavBar = () => {
 
 						{/* Suggestions Dropdown */}
 						{showSuggestions && suggestions.length > 0 && (
-							<div className="absolute top-full left-0 right-0 mt-2 bg-card-bg border border-cblue/30 rounded-xl overflow-hidden shadow-xl z-50 bg-background">
-								{suggestions.map(movie => (
+							<div className="absolute top-full left-0 right-0 mt-2 bg-background border border-cblue/30 rounded-xl overflow-hidden shadow-xl z-50">
+								{suggestions.map(item => (
 									<button
-										key={movie.id}
+										key={item.id}
 										onMouseDown={() => {
-											router.push(`/details/${movie.id}`)
+											if (item.isAnime) {
+												window.open(
+													`https://myanimelist.net/anime/${item.id}`,
+													'_blank'
+												)
+											} else {
+												router.push(`/details/${item.id}`)
+											}
 											setSearchQuery('')
 											setSuggestions([])
 											setShowSuggestions(false)
 										}}
-										className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-background/50 transition-colors duration-150 cursor-pointer"
+										className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-card-bg transition-colors duration-150 cursor-pointer"
 									>
 										<img
 											src={
-												movie.poster_path
-													? `https://image.tmdb.org/t/p/w92${movie.poster_path}`
-													: '/placeholder.png'
+												item.isAnime
+													? item.poster_path
+													: item.poster_path
+														? `https://image.tmdb.org/t/p/w92${item.poster_path}`
+														: '/placeholder.png'
 											}
-											alt={movie.title}
+											alt={item.title}
 											className="w-8 h-11 object-cover rounded shrink-0"
 										/>
 										<div className="text-left">
 											<p className="text-white text-sm font-medium truncate">
-												{movie.title}
+												{item.title}
 											</p>
 											<p className="text-cblue text-xs">
-												{movie.release_date?.split('-')[0]} • ★{' '}
-												{movie.vote_average?.toFixed(1)}
+												{item.release_date?.split('-')[0]} • ★{' '}
+												{item.vote_average?.toFixed(1)}
 											</p>
 										</div>
 									</button>
@@ -127,17 +143,12 @@ const NavBar = () => {
 				<ul className="hidden md:flex items-center gap-4 lg:gap-6 shrink-0">
 					<FeedbackModal />
 					<a
-						href="#"
+						href="https://buymeacoffee.com/moviecast"
+						target="_blank"
 						className="flex items-center py-1.5 px-3 bg-primary text-background cursor-pointer duration-300 ease-in-out hover:bg-text rounded-xl text-sm font-semibold"
 					>
 						<PiCoffeeBold className="mr-2 size-4" />
-						<a
-							href="https://buymeacoffee.com/moviecast"
-							target="_blank"
-							className="hidden lg:inline"
-						>
-							Buy me a coffee
-						</a>
+						Buy me a coffee
 					</a>
 				</ul>
 
@@ -190,15 +201,10 @@ const NavBar = () => {
 
 				{/* Mobile Action Buttons */}
 				<div className="flex flex-col gap-3 px-4 pb-4">
+					<FeedbackModal />
+
 					<a
-						href="#"
-						className="flex items-center justify-center py-2.5 bg-background/50 border border-gray-700 rounded-xl text-gray-400 text-sm"
-					>
-						<HiOutlineMail className="mr-2 size-4" />
-						Feedback
-					</a>
-					<a
-						href="#"
+						href="https://buymeacoffee.com/moviecast"
 						className="flex items-center justify-center py-2.5 px-3 bg-primary text-background rounded-xl text-sm font-semibold"
 					>
 						<PiCoffeeBold className="mr-2 size-4" />

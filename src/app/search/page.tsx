@@ -15,6 +15,13 @@ export default async function SearchPage({
 				Results for <span className="text-primary">"{q}"</span>
 			</h1>
 			<p className="text-cblue text-sm mb-8">{movies.length} movies found</p>
+
+			<a
+				href="/"
+				className="text-primary hover:underline mb-6 inline-block"
+			>
+				← Go Back
+			</a>
 			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
 				{movies.map((movie: any) => (
 					<Link

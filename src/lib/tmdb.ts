@@ -141,17 +141,41 @@ export async function getPopularMovies() {
 	}))
 }
 export async function searchMovies(query: string) {
-	const res = await fetch(
+	const firstRes = await fetch(
 		`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=1`,
 		{ next: { revalidate: 3600 } }
 	)
-	const data = await res.json()
-	return data.results.map((movie: any) => ({
-		id: movie.id,
-		title: movie.title,
-		overview: movie.overview,
-		poster_path: movie.poster_path,
-		release_date: movie.release_date,
-		vote_average: movie.vote_average
-	}))
+	const firstData = await firstRes.json()
+	const totalPages = Math.min(firstData.total_pages, 5) // max 5 pages = 100 results
+
+	if (totalPages <= 1)
+		return firstData.results.map((m: any) => ({
+			id: m.id,
+			title: m.title,
+			overview: m.overview,
+			poster_path: m.poster_path,
+			release_date: m.release_date,
+			vote_average: m.vote_average
+		}))
+
+	const rest = await Promise.all(
+		Array.from({ length: totalPages - 1 }, (_, i) =>
+			fetch(
+				`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=${i + 2}`,
+				{ next: { revalidate: 3600 } }
+			).then(r => r.json())
+		)
+	)
+
+	return [firstData, ...rest]
+		.flatMap(p => p.results)
+		.filter((m, i, self) => i === self.findIndex(x => x.id === m.id))
+		.map((m: any) => ({
+			id: m.id,
+			title: m.title,
+			overview: m.overview,
+			poster_path: m.poster_path,
+			release_date: m.release_date,
+			vote_average: m.vote_average
+		}))
 }

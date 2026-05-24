@@ -1,0 +1,364 @@
+'use client'
+
+import { useRef, useState } from 'react'
+
+const getAirDate = (aired: { from: string | null }) => {
+	if (!aired?.from) return 'TBA'
+	const release = new Date(aired.from)
+	const today = new Date()
+	const diff = Math.ceil(
+		(release.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+	)
+	if (diff === 0) return 'Today'
+	if (diff === 1) return 'Tomorrow'
+	if (diff < 0) return `${Math.abs(diff)} days ago`
+	return `In ${diff} days`
+}
+
+type Anime = {
+	mal_id: number
+	url: string
+	images: {
+		jpg: { image_url: string; small_image_url: string; large_image_url: string }
+	}
+	title: string
+	title_english: string | null
+	title_japanese: string | null
+	type: string
+	source: string
+	episodes: number | null
+	status: string
+	airing: boolean
+	aired: { from: string | null; to: string | null; string: string }
+	duration: string
+	rating: string
+	score: number | null
+	scored_by: number | null
+	rank: number | null
+	popularity: number
+	members: number
+	favorites: number
+	synopsis: string
+	season: string | null
+	year: number | null
+	genres: { mal_id: number; name: string }[]
+	themes: { mal_id: number; name: string }[]
+	studios: { mal_id: number; name: string }[]
+}
+
+type Props = { anime: Anime[] }
+
+const AnimePopular = ({ anime }: Props) => {
+	const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null)
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const scrollRef = useRef<HTMLDivElement>(null)
+
+	const openModal = (item: Anime) => {
+		setSelectedAnime(item)
+		setIsModalOpen(true)
+	}
+	const closeModal = () => {
+		setIsModalOpen(false)
+		setSelectedAnime(null)
+	}
+
+	const scroll = (direction: 'left' | 'right') => {
+		if (scrollRef.current) {
+			const containerWidth = scrollRef.current.offsetWidth
+			scrollRef.current.scrollBy({
+				left: direction === 'left' ? -containerWidth : containerWidth,
+				behavior: 'smooth'
+			})
+		}
+	}
+
+	return (
+		<section className="w-full py-8">
+			<div className="flex items-center justify-between mb-6 px-4">
+				<div className="flex items-center gap-3">
+					<h2 className="text-xl font-bold text-wite">Popular Anime</h2>
+					<span className="text-sm text-primary bg-primary/20 px-2 py-0.5 rounded-full">
+						{anime.length} titles
+					</span>
+				</div>
+			</div>
+
+			<div className="relative group/scroll px-4">
+				<button
+					onClick={() => scroll('left')}
+					className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-background/80 hover:bg-primary text-wite rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300"
+				>
+					<svg
+						className="w-5 h-5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M15 19l-7-7 7-7"
+						/>
+					</svg>
+				</button>
+				<button
+					onClick={() => scroll('right')}
+					className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-background/80 hover:bg-primary text-wite rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300"
+				>
+					<svg
+						className="w-5 h-5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M9 5l7 7-7 7"
+						/>
+					</svg>
+				</button>
+
+				<div
+					ref={scrollRef}
+					className="flex gap-4 overflow-x-auto pb-4"
+					style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+				>
+					{anime.map(item => (
+						<div
+							key={item.mal_id}
+							onClick={() => openModal(item)}
+							className="shrink-0 w-44 sm:w-48 cursor-pointer group"
+						>
+							<div className="relative rounded-lg overflow-hidden bg-card-bg hover:bg-card-hover transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-primary/20">
+								<div className="relative h-56 sm:h-64 overflow-hidden">
+									<img
+										src={
+											item.images?.jpg?.large_image_url ||
+											item.images?.jpg?.image_url ||
+											'/placeholder.svg'
+										}
+										alt={item.title}
+										className="w-full h-full object-cover"
+									/>
+									<div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
+									<div className="absolute top-2 left-2">
+										<span className="text-xs font-semibold px-2 py-1 rounded bg-primary text-background">
+											{item.type || 'N/A'}
+										</span>
+									</div>
+									{item.score && (
+										<div className="absolute top-2 right-2">
+											<span className="text-xs font-bold px-2 py-1 rounded bg-cblue text-wite">
+												★ {item.score.toFixed(1)}
+											</span>
+										</div>
+									)}
+								</div>
+								<div className="p-3">
+									<h3 className="text-sm font-semibold text-wite line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+										{item.title}
+									</h3>
+									{item.title_english && item.title_english !== item.title && (
+										<p className="text-xs text-cblue line-clamp-1 mb-1">
+											{item.title_english}
+										</p>
+									)}
+									<p className="text-xs text-primary font-medium mb-2">
+										{getAirDate(item.aired)}
+									</p>
+									<div className="flex flex-wrap gap-1">
+										{item.genres?.slice(0, 2).map(genre => (
+											<span
+												key={genre.mal_id}
+												className="text-xs px-1.5 py-0.5 rounded bg-background text-cblue"
+											>
+												{genre.name}
+											</span>
+										))}
+									</div>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Modal - same as AnimeUpcoming */}
+			{isModalOpen && selectedAnime && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+					onClick={closeModal}
+				>
+					<div
+						className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-card-bg rounded-xl shadow-2xl"
+						onClick={e => e.stopPropagation()}
+					>
+						<button
+							onClick={closeModal}
+							className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-background/80 hover:bg-primary text-wite transition-colors"
+						>
+							<svg
+								className="w-5 h-5"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M6 18L18 6M6 6l12 12"
+								/>
+							</svg>
+						</button>
+						<div className="flex flex-col md:flex-row">
+							<div className="md:w-1/3 shrink-0">
+								<img
+									src={
+										selectedAnime.images?.jpg?.large_image_url ||
+										'/placeholder.svg'
+									}
+									alt={selectedAnime.title}
+									className="w-full h-64 md:h-full object-cover md:rounded-l-xl"
+								/>
+							</div>
+							<div className="flex-1 p-6">
+								<h2 className="text-2xl font-bold text-wite mb-1">
+									{selectedAnime.title}
+								</h2>
+								{selectedAnime.title_english && (
+									<p className="text-sm text-cblue mb-1">
+										{selectedAnime.title_english}
+									</p>
+								)}
+								{selectedAnime.title_japanese && (
+									<p className="text-xs text-wite/60 mb-4">
+										{selectedAnime.title_japanese}
+									</p>
+								)}
+								<div className="flex flex-wrap gap-3 mb-4">
+									{selectedAnime.score && (
+										<div className="flex items-center gap-1 bg-primary/20 px-3 py-1 rounded-full">
+											<span className="text-sm font-semibold text-primary">
+												★ {selectedAnime.score.toFixed(1)}
+											</span>
+										</div>
+									)}
+									<div className="flex items-center gap-1 bg-cblue/20 px-3 py-1 rounded-full">
+										<span className="text-sm text-cblue">
+											{selectedAnime.type}
+										</span>
+									</div>
+									{selectedAnime.rank && (
+										<div className="flex items-center gap-1 bg-primary/20 px-3 py-1 rounded-full">
+											<span className="text-sm text-primary">
+												Rank #{selectedAnime.rank}
+											</span>
+										</div>
+									)}
+								</div>
+								<div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+									<div>
+										<span className="text-wite/60">Source:</span>
+										<span className="ml-2 text-wite">
+											{selectedAnime.source || 'Unknown'}
+										</span>
+									</div>
+									<div>
+										<span className="text-wite/60">Duration:</span>
+										<span className="ml-2 text-wite">
+											{selectedAnime.duration || 'Unknown'}
+										</span>
+									</div>
+									<div>
+										<span className="text-wite/60">Rating:</span>
+										<span className="ml-2 text-wite">
+											{selectedAnime.rating || 'Unknown'}
+										</span>
+									</div>
+									<div>
+										<span className="text-wite/60">Popularity:</span>
+										<span className="ml-2 text-wite">
+											#{selectedAnime.popularity}
+										</span>
+									</div>
+									<div>
+										<span className="text-wite/60">Members:</span>
+										<span className="ml-2 text-wite">
+											{selectedAnime.members?.toLocaleString()}
+										</span>
+									</div>
+								</div>
+								{selectedAnime.genres?.length > 0 && (
+									<div className="mb-4">
+										<span className="text-sm text-wite/60 block mb-2">
+											Genres
+										</span>
+										<div className="flex flex-wrap gap-2">
+											{selectedAnime.genres.map(genre => (
+												<span
+													key={genre.mal_id}
+													className="text-xs px-2 py-1 rounded-full bg-primary/20 text-primary"
+												>
+													{genre.name}
+												</span>
+											))}
+										</div>
+									</div>
+								)}
+								{selectedAnime.studios?.length > 0 && (
+									<div className="mb-4">
+										<span className="text-sm text-wite/60 block mb-2">
+											Studios
+										</span>
+										<div className="flex flex-wrap gap-2">
+											{selectedAnime.studios.map(studio => (
+												<span
+													key={studio.mal_id}
+													className="text-xs px-2 py-1 rounded-full bg-wite/10 text-wite"
+												>
+													{studio.name}
+												</span>
+											))}
+										</div>
+									</div>
+								)}
+								{selectedAnime.synopsis && (
+									<div>
+										<span className="text-sm text-wite/60 block mb-2">
+											Synopsis
+										</span>
+										<p className="text-sm text-wite/80 leading-relaxed">
+											{selectedAnime.synopsis}
+										</p>
+									</div>
+								)}
+								<div className="flex gap-3 mt-6">
+									<a
+										href={selectedAnime.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex-1 py-2 px-4 bg-primary text-background font-semibold rounded-lg text-center hover:bg-primary/90 transition-colors"
+									>
+										View on MAL
+									</a>
+									<button
+										onClick={closeModal}
+										className="py-2 px-4 bg-wite/10 text-wite rounded-lg hover:bg-wite/20 transition-colors"
+									>
+										Close
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+		</section>
+	)
+}
+
+export default AnimePopular

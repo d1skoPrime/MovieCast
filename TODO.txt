@@ -1,3 +1,18 @@
 * Make that by clicking on the movie, it will open a new page with more details about the movie, including the overview, release date, and rating. You can use the TMDB API to fetch this information and display it on the new page.
 * Add a search bar to the top of the page that allows users to search for movies by title. You can use the TMDB API to fetch search results and display them in a dropdown below the search bar.
 * Implement pagination for the upcoming movies list, allowing users to navigate through multiple pages of results. You can use the TMDB API's pagination features to fetch additional pages of results and update the UI accordingly.
+
+
+
+
+
+
+**Make accounts and watchlists so user can frined each other and share their watchlists. You can use a backend service like Firebase or Node.js with a database to handle user authentication and data storage. 
+
+**Add anime (WORKING ON  THIS)
+ -- BBest ones:
+Jikan API — free, no key needed, pulls from MyAnimeList:
+https://api.jikan.moe/v4/anime?type=movie&status=upcoming 
+**Add filtering by genres
+
+**Add different categories when you scroll.

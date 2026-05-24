@@ -34,8 +34,9 @@ const UpcomingClient = ({ movies }: { movies: any[] }) => {
 
 	const scroll = (direction: 'left' | 'right') => {
 		if (scrollRef.current) {
+			const containerWidth = scrollRef.current.offsetWidth
 			scrollRef.current.scrollBy({
-				left: direction === 'left' ? -300 : 300,
+				left: direction === 'left' ? -containerWidth : containerWidth,
 				behavior: 'smooth'
 			})
 		}
@@ -43,7 +44,7 @@ const UpcomingClient = ({ movies }: { movies: any[] }) => {
 
 	return (
 		<section className="py-8 px-4 md:px-6">
-			<div className="flex items-center gap-4 mb-6">
+			<div className="flex items-center gap-4">
 				<h2 className="text-lg md:text-xl font-bold text-white">Coming Up</h2>
 				<span className="text-xs md:text-sm text-primary font-medium">
 					{movies.length} releases
@@ -69,7 +70,7 @@ const UpcomingClient = ({ movies }: { movies: any[] }) => {
 				<div className="relative group/scroll">
 					<button
 						onClick={() => scroll('left')}
-						className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-background/80 hover:bg-primary text-white rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 -translate-x-1/2"
+						className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-cblue hover:bg-primary text-white rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 -translate-x-1/2"
 					>
 						<svg
 							className="w-4 h-4"
@@ -87,7 +88,7 @@ const UpcomingClient = ({ movies }: { movies: any[] }) => {
 					</button>
 					<button
 						onClick={() => scroll('right')}
-						className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-background/80 hover:bg-primary text-white rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 translate-x-1/2"
+						className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-cblue hover:bg-primary text-white rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 translate-x-1/2"
 					>
 						<svg
 							className="w-4 h-4"
@@ -105,7 +106,7 @@ const UpcomingClient = ({ movies }: { movies: any[] }) => {
 					</button>
 					<div
 						ref={scrollRef}
-						className="flex gap-3 md:gap-4 overflow-x-auto pb-4"
+						className="flex gap-3 md:gap-4 overflow-x-auto "
 						style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
 					>
 						{movies.map((movie: any) => (
@@ -144,9 +145,6 @@ const UpcomingClient = ({ movies }: { movies: any[] }) => {
 									<h3 className="text-white font-semibold text-sm md:text-base truncate group-hover:text-primary transition-colors">
 										{movie.title}
 									</h3>
-									<p className="text-gray-400 text-xs line-clamp-2 hidden md:block">
-										{movie.overview}
-									</p>
 								</div>
 							</div>
 						))}

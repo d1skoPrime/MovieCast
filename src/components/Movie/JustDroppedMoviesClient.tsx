@@ -3,13 +3,38 @@
 import Link from 'next/link'
 import { useRef } from 'react'
 
-const PopularClient = ({ movies }: { movies: any[] }) => {
+const getBadgeColor = (badge: string | null) => {
+	switch (badge) {
+		case 'NEW':
+			return 'bg-primary text-background'
+		case 'HOT':
+			return 'bg-text text-wite'
+		case 'REMASTER':
+			return 'bg-cblue text-wite'
+		default:
+			return ''
+	}
+}
+
+const getDaysAgo = (dateStr: string) => {
+	const today = new Date()
+	const release = new Date(dateStr)
+	const diff = Math.floor(
+		(today.getTime() - release.getTime()) / (1000 * 60 * 60 * 24)
+	)
+	if (diff === 0) return 'Today'
+	if (diff === 1) return 'Yesterday'
+	return `${diff} days ago`
+}
+
+const JustDroppedClient = ({ movies }: { movies: any[] }) => {
 	const scrollRef = useRef<HTMLDivElement>(null)
 
 	const scroll = (direction: 'left' | 'right') => {
 		if (scrollRef.current) {
+			const containerWidth = scrollRef.current.offsetWidth
 			scrollRef.current.scrollBy({
-				left: direction === 'left' ? -250 : 250,
+				left: direction === 'left' ? -containerWidth : containerWidth,
 				behavior: 'smooth'
 			})
 		}
@@ -18,7 +43,7 @@ const PopularClient = ({ movies }: { movies: any[] }) => {
 	return (
 		<section className="py-8 px-6">
 			<div className="flex items-center gap-4 mb-6">
-				<h2 className="text-xl font-bold text-wite">Popular Movies</h2>
+				<h2 className="text-xl font-bold text-wite">Just Dropped</h2>
 				<span className="text-sm text-text font-medium">
 					{movies.length} titles
 				</span>
@@ -27,7 +52,7 @@ const PopularClient = ({ movies }: { movies: any[] }) => {
 			<div className="relative group/scroll">
 				<button
 					onClick={() => scroll('left')}
-					className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-background/80 hover:bg-primary text-wite rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 -translate-x-1/2"
+					className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-cblue hover:bg-primary text-wite rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 -translate-x-1/2"
 				>
 					<svg
 						className="w-4 h-4"
@@ -46,7 +71,7 @@ const PopularClient = ({ movies }: { movies: any[] }) => {
 
 				<button
 					onClick={() => scroll('right')}
-					className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-background/80 hover:bg-primary text-wite rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 translate-x-1/2"
+					className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-cblue hover:bg-primary text-wite rounded-full opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300 translate-x-1/2"
 				>
 					<svg
 						className="w-4 h-4"
@@ -82,7 +107,7 @@ const PopularClient = ({ movies }: { movies: any[] }) => {
 											: '/placeholder.png'
 									}
 									alt={movie.title}
-									className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105"
+									className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105 text-white"
 								/>
 								<div className="absolute bottom-2 right-2">
 									<span className="px-1.5 py-0.5 text-xs font-bold rounded bg-background/80 text-primary backdrop-blur-sm">
@@ -93,8 +118,8 @@ const PopularClient = ({ movies }: { movies: any[] }) => {
 								<div className="absolute inset-0 bg-linear-to-t from-background/60 via-transparent to-transparent"></div>
 							</div>
 							<div className="space-y-1.5">
-								<span className="text-primary text-xs font-medium">
-									#{movies.indexOf(movie) + 1} Popular
+								<span className="text-text text-xs font-medium">
+									{getDaysAgo(movie.release_date)}
 								</span>
 								<h3 className="text-wite font-medium text-sm truncate group-hover:text-primary transition-colors">
 									{movie.title}
@@ -108,4 +133,4 @@ const PopularClient = ({ movies }: { movies: any[] }) => {
 	)
 }
 
-export default PopularClient
+export default JustDroppedClient
