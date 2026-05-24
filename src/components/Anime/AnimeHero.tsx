@@ -5,7 +5,8 @@ import PopularLogicAnime from './PopularLogic'
 import UpcomingLogicAnime from './UpcomingLogic'
 
 type Props = {}
-
+// src/app/page.tsx
+export const dynamic = 'force-dynamic'
 const AnimeHero = (props: Props) => {
 	return (
 		<div className="w-full min-h-screen">

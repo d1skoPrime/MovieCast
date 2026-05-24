@@ -1,5 +1,6 @@
 'use client'
 
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { PiCoffeeBold } from 'react-icons/pi'
@@ -7,12 +8,18 @@ import { RiMovie2AiFill } from 'react-icons/ri'
 import FeedbackModal from './FeedBackModal'
 
 const NavBar = ({ mode }: { mode: 'movies' | 'anime' }) => {
+	const [user, setUser] = useState<any>(null)
+	const supabase = createClient()
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
 	const [suggestions, setSuggestions] = useState<any[]>([])
 	const [showSuggestions, setShowSuggestions] = useState(false)
 	const router = useRouter()
 	const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+	useEffect(() => {
+		supabase.auth.getUser().then(({ data }) => setUser(data.user))
+	}, [])
 
 	useEffect(() => {
 		if (searchQuery.trim().length < 2) {
@@ -152,6 +159,28 @@ const NavBar = ({ mode }: { mode: 'movies' | 'anime' }) => {
 					</a>
 				</ul>
 
+				{user ? (
+					<div className="flex items-center gap-2">
+						<img
+							src={user.user_metadata?.avatar_url}
+							className="w-8 h-8 rounded-full"
+						/>
+						<button
+							onClick={() => supabase.auth.signOut()}
+							className="text-xs text-cblue hover:text-white"
+						>
+							Sign Out
+						</button>
+					</div>
+				) : (
+					<a
+						href="/auth"
+						className="flex items-center py-1.5 px-3 bg-card-bg border border-cblue/30 text-white rounded-xl text-sm hover:border-primary transition-colors"
+					>
+						Sign In
+					</a>
+				)}
+
 				{/* Mobile Menu Button */}
 				<button
 					onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -210,6 +239,27 @@ const NavBar = ({ mode }: { mode: 'movies' | 'anime' }) => {
 						<PiCoffeeBold className="mr-2 size-4" />
 						Buy me a coffee
 					</a>
+					{user ? (
+						<div className="flex items-center gap-2">
+							<img
+								src={user.user_metadata?.avatar_url}
+								className="w-8 h-8 rounded-full"
+							/>
+							<button
+								onClick={() => supabase.auth.signOut()}
+								className="text-xs text-cblue hover:text-white"
+							>
+								Sign Out
+							</button>
+						</div>
+					) : (
+						<a
+							href="/auth"
+							className="flex items-center py-1.5 px-3 bg-card-bg border border-cblue/30 text-white rounded-xl text-sm hover:border-primary transition-colors"
+						>
+							Sign In
+						</a>
+					)}
 				</div>
 			</div>
 		</div>
