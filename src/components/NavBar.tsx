@@ -54,7 +54,13 @@ const NavBar = () => {
 						className="flex items-center py-1.5 px-3 bg-primary text-background cursor-pointer duration-300 ease-in-out hover:bg-text rounded-xl text-sm font-semibold"
 					>
 						<PiCoffeeBold className="mr-2 size-4" />
-						<span className="hidden lg:inline">Buy me a coffee</span>
+						<a
+							href="https://buymeacoffee.com/moviecast"
+							target="_blank"
+							className="hidden lg:inline"
+						>
+							Buy me a coffee
+						</a>
 					</a>
 				</ul>
 
