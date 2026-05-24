@@ -1,0 +1,130 @@
+'use client'
+
+import { useState } from 'react'
+import { HiOutlineMail } from 'react-icons/hi'
+import { PiCoffeeBold } from 'react-icons/pi'
+import { RiMovie2AiFill } from 'react-icons/ri'
+import FeedbackModal from './FeedBackModal'
+
+const NavBar = () => {
+	const [isMenuOpen, setIsMenuOpen] = useState(false)
+	const [searchQuery, setSearchQuery] = useState('')
+
+	return (
+		<div className="w-full h-full relative">
+			<div className="w-full h-full flex items-center justify-between px-4 md:px-8">
+				{/* Logo */}
+				<h1 className="text-xl font-bold text-primary flex items-center shrink-0">
+					<RiMovie2AiFill className="size-7 md:size-9 text-text" />
+					<span className="text-wite text-2xl md:text-4xl">Movie</span>
+					<span className="text-primary text-xl md:text-2xl">Cast</span>
+				</h1>
+
+				{/* Search Bar - Center */}
+				<div className="hidden md:flex flex-1 max-w-xl mx-4 lg:mx-8">
+					<div className="relative w-full">
+						<input
+							type="text"
+							value={searchQuery}
+							onChange={e => setSearchQuery(e.target.value)}
+							placeholder="Search movies..."
+							className="w-full py-2 pl-10 pr-4 bg-card-bg border border-cblue/30 rounded-full text-wite placeholder-cblue/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+						/>
+						<svg
+							className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cblue/60"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+							/>
+						</svg>
+					</div>
+				</div>
+
+				{/* Right Side Actions - Desktop */}
+				<ul className="hidden md:flex items-center gap-4 lg:gap-6 shrink-0">
+					<FeedbackModal />
+					<a
+						href="#"
+						className="flex items-center py-1.5 px-3 bg-primary text-background cursor-pointer duration-300 ease-in-out hover:bg-text rounded-xl text-sm font-semibold"
+					>
+						<PiCoffeeBold className="mr-2 size-4" />
+						<span className="hidden lg:inline">Buy me a coffee</span>
+					</a>
+				</ul>
+
+				{/* Mobile Menu Button */}
+				<button
+					onClick={() => setIsMenuOpen(!isMenuOpen)}
+					className="md:hidden flex flex-col gap-1.5 p-2"
+				>
+					<span
+						className={`w-6 h-0.5 bg-wite transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}
+					></span>
+					<span
+						className={`w-6 h-0.5 bg-wite transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}
+					></span>
+					<span
+						className={`w-6 h-0.5 bg-wite transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}
+					></span>
+				</button>
+			</div>
+
+			{/* Mobile Menu */}
+			<div
+				className={`md:hidden absolute bg-background top-full left-0 w-full bg-card-bg border-t border-cblue/20 transition-all duration-300 z-50 ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+			>
+				{/* Mobile Search */}
+				<div className="p-4">
+					<div className="relative w-full">
+						<input
+							type="text"
+							value={searchQuery}
+							onChange={e => setSearchQuery(e.target.value)}
+							placeholder="Search movies..."
+							className="w-full py-2.5 pl-10 pr-4 bg-background border border-cblue/30 rounded-full text-wite placeholder-cblue/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
+						/>
+						<svg
+							className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cblue/60"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+							/>
+						</svg>
+					</div>
+				</div>
+
+				{/* Mobile Action Buttons */}
+				<div className="flex flex-col gap-3 px-4 pb-4">
+					<a
+						href="#"
+						className="flex items-center justify-center py-2.5 bg-background/50 border border-gray-700 rounded-xl text-gray-400 text-sm"
+					>
+						<HiOutlineMail className="mr-2 size-4" />
+						Feedback
+					</a>
+					<a
+						href="#"
+						className="flex items-center justify-center py-2.5 px-3 bg-primary text-background rounded-xl text-sm font-semibold"
+					>
+						<PiCoffeeBold className="mr-2 size-4" />
+						Buy me a coffee
+					</a>
+				</div>
+			</div>
+		</div>
+	)
+}
+
+export default NavBar

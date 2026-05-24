@@ -1,0 +1,37 @@
+MVP Roadmap (no auth)
+
+1. TMDB setup — get this working first, everything depends on it
+
+Get free API key at themoviedb.org
+Create lib/tmdb.ts with base fetch wrapper + your API key in .env.local
+Test 2 endpoints: /movie/now_playing and /movie/upcoming
+
+
+2. Home page — the core UI
+
+Now Playing section (horizontal scroll row)
+Upcoming section (grid of cards)
+Each card: poster, title, release date, rating
+That's it, no extras yet
+
+
+3. Movie detail page — /movie/[id]
+
+Poster + backdrop image
+Title, overview, genres, runtime
+Release date formatted ("Releases in 12 days" or "In theaters now")
+Trailer embed (YouTube via TMDB's /movie/{id}/videos)
+
+
+4. Search — /search?q=
+
+Single input in navbar
+Hits TMDB /search/movie
+Shows results grid, same card component as home
+
+
+5. Watchlist — zustand + localStorage
+
+"Want to Watch" button on every card/detail page
+Dedicated /watchlist page showing saved movies
+Persisted in localStorage so it survives refresh — no auth needed
