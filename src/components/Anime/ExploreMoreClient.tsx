@@ -34,7 +34,7 @@ const ExploreMoreClient = ({ anime }: Props) => {
 	const loadMore = async (currentPage = page) => {
 		setIsLoading(true)
 		try {
-			const res = await fetch(`/api/anime-upcoming?page=${currentPage}`)
+			const res = await fetch(`/api/anime-released?page=${currentPage}`)
 			const newAnime: Anime[] = await res.json()
 
 			if (newAnime.length === 0) {

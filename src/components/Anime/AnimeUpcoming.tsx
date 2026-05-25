@@ -2,25 +2,56 @@
 
 import { Anime } from '@/types/types'
 import { useRef, useState } from 'react'
-export const getAirDate = (aired: { from: string | null }) => {
+
+export const getAirDate = (aired: { from: string | null; string?: string }) => {
 	if (!aired?.from) return 'TBA'
+
 	const release = new Date(aired.from)
+	// Catch any unparseable invalid dates safely
+	if (isNaN(release.getTime())) {
+		return aired.string || 'Unknown Date'
+	}
+
 	const today = new Date()
+	today.setHours(0, 0, 0, 0)
+
+	// Calculate day difference cleanly
 	const diff = Math.ceil(
 		(release.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
 	)
-	if (diff === 0) return 'Today'
+
+	// 1. Future Dates (Upcoming)
+	if (diff > 1) return `In ${diff} days`
 	if (diff === 1) return 'Tomorrow'
-	if (diff < 0) return `${Math.abs(diff)} days ago`
-	return `In ${diff} days`
+	if (diff === 0) return 'Today'
+
+	// 2. Past Dates (Released) - Format as a clean calendar date
+	// Returns clean strings like "Jan 25, 2024"
+	return release.toLocaleDateString('en-US', {
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric'
+	})
 }
 
-type Props = { anime: Anime[] }
+type Props = {
+	anime: Anime[]
+	onLoadMore?: () => void
+	isLoadingMore?: boolean
+}
 
-const AnimeUpcoming = ({ anime }: Props) => {
+const AnimeUpcoming = ({ anime, onLoadMore, isLoadingMore }: Props) => {
 	const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const scrollRef = useRef<HTMLDivElement>(null)
+
+	const sortedAnime = [...anime].sort((a, b) => {
+		const dateA = a.aired?.from ? new Date(a.aired.from).getTime() : Infinity
+		const dateB = b.aired?.from ? new Date(b.aired.from).getTime() : Infinity
+
+		// Soonest release date first. TBA (Infinity) goes to the very end.
+		return dateA - dateB
+	})
 
 	const openModal = (item: Anime) => {
 		setSelectedAnime(item)
@@ -100,7 +131,7 @@ const AnimeUpcoming = ({ anime }: Props) => {
 					className="flex gap-4 overflow-x-auto pb-4"
 					style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
 				>
-					{anime.map(item => (
+					{sortedAnime.map(item => (
 						<div
 							key={item.mal_id}
 							onClick={() => openModal(item)}
@@ -182,6 +213,18 @@ const AnimeUpcoming = ({ anime }: Props) => {
 							</div>
 						</div>
 					))}
+					{/* Load More Button at end of scroll */}
+					{onLoadMore && (
+						<div className="shrink-0 flex items-center justify-center w-44 sm:w-48">
+							<button
+								onClick={onLoadMore}
+								disabled={isLoadingMore}
+								className="px-4 py-2 bg-card-bg border border-cblue/30 text-wite rounded-full hover:border-primary hover:bg-primary/10 transition-all duration-300 text-sm disabled:opacity-50 whitespace-nowrap"
+							>
+								{isLoadingMore ? 'Loading...' : 'Load More'}
+							</button>
+						</div>
+					)}
 				</div>
 			</div>
 

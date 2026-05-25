@@ -1,5 +1,6 @@
 'use client'
 
+import { Anime } from '@/types/types'
 import { useRef, useState } from 'react'
 
 const getAirDate = (aired: { from: string | null }) => {
@@ -15,40 +16,13 @@ const getAirDate = (aired: { from: string | null }) => {
 	return `In ${diff} days`
 }
 
-type Anime = {
-	mal_id: number
-	url: string
-	images: {
-		jpg: { image_url: string; small_image_url: string; large_image_url: string }
-	}
-	title: string
-	title_english: string | null
-	title_japanese: string | null
-	type: string
-	source: string
-	episodes: number | null
-	status: string
-	airing: boolean
-	aired: { from: string | null; to: string | null; string: string }
-	duration: string
-	rating: string
-	score: number | null
-	scored_by: number | null
-	rank: number | null
-	popularity: number
-	members: number
-	favorites: number
-	synopsis: string
-	season: string | null
-	year: number | null
-	genres: { mal_id: number; name: string }[]
-	themes: { mal_id: number; name: string }[]
-	studios: { mal_id: number; name: string }[]
+type Props = {
+	anime: Anime[]
+	onLoadMore?: () => void
+	isLoadingMore?: boolean
 }
 
-type Props = { anime: Anime[] }
-
-const AnimePopular = ({ anime }: Props) => {
+const AnimePopular = ({ anime, onLoadMore, isLoadingMore }: Props) => {
 	const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null)
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const scrollRef = useRef<HTMLDivElement>(null)
@@ -71,6 +45,12 @@ const AnimePopular = ({ anime }: Props) => {
 			})
 		}
 	}
+
+	const sortedAnime = [...anime].sort((a, b) => {
+		const scoreA = a.score ?? 0
+		const scoreB = b.score ?? 0
+		return scoreB - scoreA // Descending order: highest first
+	})
 
 	return (
 		<section className="w-full py-8">
@@ -126,7 +106,7 @@ const AnimePopular = ({ anime }: Props) => {
 					className="flex gap-4 overflow-x-auto pb-4"
 					style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
 				>
-					{anime.map(item => (
+					{sortedAnime.map(item => (
 						<div
 							key={item.mal_id}
 							onClick={() => openModal(item)}
@@ -183,6 +163,17 @@ const AnimePopular = ({ anime }: Props) => {
 							</div>
 						</div>
 					))}
+					{onLoadMore && (
+						<div className="shrink-0 flex items-center justify-center w-44 sm:w-48">
+							<button
+								onClick={onLoadMore}
+								disabled={isLoadingMore}
+								className="px-4 py-2 bg-card-bg border border-cblue/30 text-wite rounded-full hover:border-primary hover:bg-primary/10 transition-all duration-300 text-sm disabled:opacity-50 whitespace-nowrap"
+							>
+								{isLoadingMore ? 'Loading...' : 'Load More'}
+							</button>
+						</div>
+					)}
 				</div>
 			</div>
 

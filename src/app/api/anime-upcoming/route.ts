@@ -1,30 +1,41 @@
+// /api/anime-upcoming/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest) {
-	// 1. Extract the page query parameter (defaulting to '1')
-	const page = req.nextUrl.searchParams.get('page') ?? '1'
+const cache = new Map<string, { data: any; expiry: number }>()
+const CACHE_DURATION = 5 * 60 * 1000
 
-	// 2. Build the correct Jikan API URL
-	// - order_by=start_date: Orders the list by release date
-	// - sort=desc: Ensures the most recent items come first
-	// - Optional: add &start_date=2015-01-01 if you only want movies from 2015 onwards
-	const jikanUrl = `https://api.jikan.moe/v4/anime?type=movie&status=complete&order_by=start_date&sort=desc&limit=25&page=${page}`
+export async function GET(req: NextRequest) {
+	const pageParam = req.nextUrl.searchParams.get('page') ?? '1'
+	const page = parseInt(pageParam)
+
+	const cacheKey = `upcoming-page-${page}`
+	const now = Date.now()
+
+	if (cache.has(cacheKey)) {
+		const cached = cache.get(cacheKey)!
+		if (now < cached.expiry) return NextResponse.json(cached.data)
+	}
 
 	try {
-		const res = await fetch(jikanUrl)
+		const res = await fetch(
+			`https://api.jikan.moe/v4/top/anime?type=movie&filter=upcoming&page=${page}`
+		).then(r => r.json())
 
-		if (!res.ok) {
-			return NextResponse.json(
-				{ error: 'Failed to fetch data from Jikan' },
-				{ status: res.status }
-			)
-		}
+		const rawData = res.data ?? []
+		const today = new Date()
+		today.setHours(0, 0, 0, 0)
 
-		const data = await res.json()
+		// Only drop items that explicitly aired in the past
+		const filteredData = rawData.filter((anime: any) => {
+			if (!anime.aired?.from) return true
+			const releaseDate = new Date(anime.aired.from)
+			return releaseDate >= today
+		})
 
-		// Return the data array
-		return NextResponse.json(data.data ?? [])
+		cache.set(cacheKey, { data: filteredData, expiry: now + CACHE_DURATION })
+		return NextResponse.json(filteredData)
 	} catch (error) {
+		console.error(error)
 		return NextResponse.json(
 			{ error: 'Internal Server Error' },
 			{ status: 500 }
